@@ -7,6 +7,7 @@
 #define MCP2515_H
 
 #include <SPI.h>
+#include <functional>
 
 #include "CANController.h"
 
@@ -34,12 +35,20 @@ public:
 
   virtual int parsePacket();
 
-  virtual void onReceive(void(*callback)(int));
+  virtual void onReceive(std::function<void(int)> callback);
 
   using CANControllerClass::filter;
   virtual int filter(int id, int mask);
   using CANControllerClass::filterExtended;
   virtual int filterExtended(long id, long mask);
+
+  using CANControllerClass::filterN;
+  virtual int filterN(FilterN filter);
+  using CANControllerClass::filterExtendedN;
+  virtual int filterExtendedN(FilterExtendedN filter);
+
+  uint8_t hitB0();
+  uint8_t hitB1();
 
   virtual int observe();
   virtual int loopback();
@@ -51,6 +60,7 @@ public:
   void setClockFrequency(long clockFrequency);
 
   void dumpRegisters(Stream& out);
+  void dumpRegisters();
 
 private:
   void reset();

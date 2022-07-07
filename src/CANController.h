@@ -5,6 +5,8 @@
 #define CAN_CONTROLLER_H
 
 #include <Arduino.h>
+#include <functional>
+
 
 class CANControllerClass : public Stream {
 
@@ -32,12 +34,24 @@ public:
   virtual int peek();
   virtual void flush();
 
-  virtual void onReceive(void(*callback)(int));
+  virtual void onReceive(std::function<void(int)> callback);
 
   virtual int filter(int id) { return filter(id, 0x7ff); }
   virtual int filter(int id, int mask);
   virtual int filterExtended(long id) { return filterExtended(id, 0x1fffffff); }
   virtual int filterExtended(long id, long mask);
+  class FilterN {
+    public:
+    int id[6];
+    int mask[2];
+  };
+  class FilterExtendedN {
+    public:
+    long id[6];
+    long mask[2];
+  };
+  virtual int filterN(FilterN filter);
+  virtual int filterExtendedN(FilterExtendedN filter);
 
   virtual int observe();
   virtual int loopback();
@@ -49,7 +63,7 @@ protected:
   virtual ~CANControllerClass();
 
 protected:
-  void (*_onReceive)(int);
+  std::function <void(int)> _onReceive;
 
   bool _packetBegun;
   long _txId;

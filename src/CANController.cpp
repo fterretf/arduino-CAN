@@ -180,7 +180,7 @@ void CANControllerClass::flush()
 {
 }
 
-void CANControllerClass::onReceive(void(*callback)(int))
+void CANControllerClass::onReceive(std::function<void(int)> callback)
 {
   _onReceive = callback;
 }
@@ -191,6 +191,16 @@ int CANControllerClass::filter(int /*id*/, int /*mask*/)
 }
 
 int CANControllerClass::filterExtended(long /*id*/, long /*mask*/)
+{
+  return 0;
+}
+
+int CANControllerClass::filterN(FilterN filter)
+{
+  return 0;
+}
+
+int CANControllerClass::filterExtendedN(FilterExtendedN filter)
 {
   return 0;
 }
