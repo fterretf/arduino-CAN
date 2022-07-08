@@ -64,6 +64,8 @@ MCP2515Class::MCP2515Class() :
   _intPin(MCP2515_DEFAULT_INT_PIN),
   _clockFrequency(MCP2515_DEFAULT_CLOCK_FREQUENCY)
 {
+  // start SPI
+  SPI.begin(); //shall be done before on receive registration!!! else interruptMode, interruptMask...  are overwritten!!!
 }
 
 MCP2515Class::~MCP2515Class()
@@ -75,9 +77,6 @@ int MCP2515Class::begin(long baudRate)
   CANControllerClass::begin(baudRate);
 
   pinMode(_csPin, OUTPUT);
-
-  // start SPI
-  SPI.begin();
 
   reset();
 
@@ -271,8 +270,18 @@ void MCP2515Class::onReceive(std::function<void(int)> callback)
   pinMode(_intPin, INPUT);
 
   if (callback) {
-    SPI.usingInterrupt(digitalPinToInterrupt(_intPin));
-    attachInterrupt(digitalPinToInterrupt(_intPin), MCP2515Class::onInterrupt, LOW);
+    //usingInterrupt use interrupt nb. !!!!
+     SPI.usingInterrupt(g_APinDescription[_intPin].ulExtInt);
+    if (_intPin==17) {
+      //Can1 use pin17, int3
+      //attachInterupt use pin nb
+      attachInterrupt(_intPin, MCP2515Class::onInterrupt1, LOW);
+    }
+    else if (_intPin==1) {
+      //Can2 use pin1,int7
+      //attachInterupt use pin nb
+      attachInterrupt(_intPin, MCP2515Class::onInterrupt2, LOW);
+    }
   } else {
     detachInterrupt(digitalPinToInterrupt(_intPin));
 #ifdef SPI_HAS_NOTUSINGINTERRUPT
@@ -289,15 +298,32 @@ uint8_t MCP2515Class::hitB1(){
   return (readRegister(REG_RXBnCTRL(1)) & 0x03);
 }
 
+int MCP2515Class::setConfigMode(){
+  // config mode
+  writeRegister(REG_CANCTRL, 0x80);
+  if (readRegister(REG_CANCTRL) != 0x80) {
+    return 0;
+  }
+  delayMicroseconds(1000); 
+  return 1;
+}
+
+int MCP2515Class::setNormalMode(){
+  // normal mode
+  writeRegister(REG_CANCTRL, 0x00);
+  if (readRegister(REG_CANCTRL) != 0x00) {
+    return 0;
+  }
+  return 1;
+}
+
 int MCP2515Class::filter(int id, int mask)
 {
   id &= 0x7ff;
   mask &= 0x7ff;
 
-  // config mode
-  writeRegister(REG_CANCTRL, 0x80);
-  if (readRegister(REG_CANCTRL) != 0x80) {
-    return 0;
+  if (!setConfigMode()){
+    return 0; 
   }
 
   for (int n = 0; n < 2; n++) {
@@ -317,10 +343,8 @@ int MCP2515Class::filter(int id, int mask)
     //writeRegister(REG_RXFnEID0(n), 0xFF);
   }
 
-  // normal mode
-  writeRegister(REG_CANCTRL, 0x00);
-  if (readRegister(REG_CANCTRL) != 0x00) {
-    return 0;
+  if (!setNormalMode()){
+    return 0; 
   }
 
   return 1;
@@ -331,10 +355,8 @@ int MCP2515Class::filterExtended(long id, long mask)
   id &= 0x1FFFFFFF;
   mask &= 0x1FFFFFFF;
 
-  // config mode
-  writeRegister(REG_CANCTRL, 0x80);
-  if (readRegister(REG_CANCTRL) != 0x80) {
-    return 0;
+  if (!setConfigMode()){
+    return 0; 
   }
 
   for (int n = 0; n < 2; n++) {
@@ -355,11 +377,8 @@ int MCP2515Class::filterExtended(long id, long mask)
     writeRegister(REG_RXFnEID0(n), id & 0xff);
   }
  
-
-  // normal mode
-  writeRegister(REG_CANCTRL, 0x00);
-  if (readRegister(REG_CANCTRL) != 0x00) {
-    return 0;
+  if (!setNormalMode()){
+    return 0; 
   }
 
   return 1;
@@ -367,12 +386,9 @@ int MCP2515Class::filterExtended(long id, long mask)
 
 int MCP2515Class::filterN(FilterN filter)
 {
-
-  // config mode
-  writeRegister(REG_CANCTRL, 0x80);
-  if (readRegister(REG_CANCTRL) != 0x80) {
-    return 0;
-  }
+  if (!setConfigMode()){
+    return 0; 
+  } 
 
   for (int n = 0; n < 2; n++) {
     // standard only
@@ -394,24 +410,20 @@ int MCP2515Class::filterN(FilterN filter)
     writeRegister(REG_RXFnEID8(n), 0);
     writeRegister(REG_RXFnEID0(n), 0);
   }
-
-  // normal mode
-  writeRegister(REG_CANCTRL, 0x00);
-  if (readRegister(REG_CANCTRL) != 0x00) {
-    return 0;
+  
+  if (!setNormalMode()){
+    return 0; 
   }
-
+  
   return 1;
 }
 
 int MCP2515Class::filterExtendedN(FilterExtendedN filter)
 {
-  // config mode
-  writeRegister(REG_CANCTRL, 0x80);
-  if (readRegister(REG_CANCTRL) != 0x80) {
-    return 0;
-  }
-
+  if (!setConfigMode()){
+    return 0; 
+  } 
+ 
   for (int n = 0; n < 2; n++) {
     // extended only
     uint32_t mask = filter.mask[n];
@@ -434,11 +446,9 @@ int MCP2515Class::filterExtendedN(FilterExtendedN filter)
     writeRegister(REG_RXFnEID0(n), id & 0xff);
   }
 
-  // normal mode
-  writeRegister(REG_CANCTRL, 0x00);
-  if (readRegister(REG_CANCTRL) != 0x00) {
-    return 0;
-  }
+  if (!setNormalMode()){
+    return 0; 
+  } 
 
   return 1;
 }
@@ -543,7 +553,7 @@ void MCP2515Class::reset()
   digitalWrite(_csPin, HIGH);
   SPI.endTransaction();
 
-  delayMicroseconds(100); ///Fter 10us is too short
+  delayMicroseconds(10);
 }
 
 void MCP2515Class::handleInterrupt()
@@ -595,11 +605,15 @@ void MCP2515Class::writeRegister(uint8_t address, uint8_t value)
   SPI.endTransaction();
 }
 
-void MCP2515Class::onInterrupt()
+void MCP2515Class::onInterrupt1()
 {
-  CAN.handleInterrupt();
+  Mpc1Ref->handleInterrupt();
 }
 
-MCP2515Class CAN;
+void MCP2515Class::onInterrupt2()
+{
+  Mpc2Ref->handleInterrupt();
+}
+
 
 #endif

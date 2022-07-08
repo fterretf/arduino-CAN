@@ -11,6 +11,7 @@
 
 #include "CANController.h"
 
+
 #define MCP2515_DEFAULT_CLOCK_FREQUENCY 16e6
 
 #if defined(ARDUINO_ARCH_SAMD) && defined(PIN_SPI_MISO) && defined(PIN_SPI_MOSI) && defined(PIN_SPI_SCK) && (PIN_SPI_MISO == 10) && (PIN_SPI_MOSI == 8) && (PIN_SPI_SCK == 9)
@@ -49,6 +50,7 @@ public:
 
   uint8_t hitB0();
   uint8_t hitB1();
+  MCP2515Class* mpc2515(){return this;};
 
   virtual int observe();
   virtual int loopback();
@@ -71,7 +73,11 @@ private:
   void modifyRegister(uint8_t address, uint8_t mask, uint8_t value);
   void writeRegister(uint8_t address, uint8_t value);
 
-  static void onInterrupt();
+  int setConfigMode();
+  int setNormalMode();
+
+  static void onInterrupt1();
+  static void onInterrupt2();
 
 private:
   SPISettings _spiSettings;
@@ -80,7 +86,8 @@ private:
   long _clockFrequency;
 };
 
-extern MCP2515Class CAN;
+extern MCP2515Class* Mpc1Ref;
+extern MCP2515Class* Mpc2Ref;
 
 #endif
 
