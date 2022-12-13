@@ -465,8 +465,8 @@ int MCP2515Class::filterExtendedN(FilterExtendedN filter)
 
 int MCP2515Class::observe()
 {
-  writeRegister(REG_CANCTRL, 0x80);
-  if (readRegister(REG_CANCTRL) != 0x80) {
+  writeRegister(REG_CANCTRL, 0x60);
+  if (readRegister(REG_CANCTRL) != 0x60) {
     return 0;
   }
 
@@ -579,7 +579,7 @@ void MCP2515Class::handleInterrupt()
     return;
   }
 
-  while (parsePacket()) {
+  while (parsePacket() || _rxId != -1) {
     _onReceive(available());
   }
 }
