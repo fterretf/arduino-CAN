@@ -40,15 +40,18 @@ public:
   virtual int filter(int id, int mask);
   virtual int filterExtended(long id) { return filterExtended(id, 0x1fffffff); }
   virtual int filterExtended(long id, long mask);
-  class FilterN {
+  //there are 2 receive box RBX0/1. 
+  //RBX0. One mask RXM0 and 2 acceptance filters RXF0/1: mask[0] and id[0..1]. Choose for extended id
+  //RBX1. One mask RXM1 and 4 acceptance filters RXF2/3/4/5: mask[1] and id[2..5]. Choose for normal id
+   class FilterN {
     public:
-    int id[6];
-    int mask[2];
+    int id[4];
+    int mask;
   };
   class FilterExtendedN {
     public:
-    long id[6];
-    long mask[2];
+    long id[2];//long is long int. equivalent to int32_t
+    long mask;
   };
   virtual int filterN(FilterN filter);
   virtual int filterExtendedN(FilterExtendedN filter);

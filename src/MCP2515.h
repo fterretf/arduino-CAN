@@ -39,14 +39,18 @@ public:
   virtual void onReceive(std::function<void(int)> callback);
 
   using CANControllerClass::filter;
-  virtual int filter(int id, int mask);
+  virtual int filter( int id, int mask);
   using CANControllerClass::filterExtended;
-  virtual int filterExtended(long id, long mask);
+  virtual int filterExtended( long id, long mask);
 
   using CANControllerClass::filterN;
   virtual int filterN(FilterN filter);
+  void setMask(uint8_t mskIdx, int msk);
+  void setAcceptanceFilter(uint8_t acceptanceIdx, int filter);
   using CANControllerClass::filterExtendedN;
   virtual int filterExtendedN(FilterExtendedN filter);
+  void setMaskExtended(uint8_t mskIdx, int msk);
+  void setAcceptanceFilterExtended(uint8_t acceptanceIdx, int filter);
 
   uint8_t hitB0();
   uint8_t hitB1();
@@ -88,7 +92,7 @@ private:
   int _csPinX;
   int _intPin;
   long _clockFrequency;
-  // See PinDescription in variant.cpp  : D6is on PA20, D7 on PA21, mask is 1<<20 | 1 << 21;  
+  // See PinDescription in variant.cpp  : D6 is on PA20, D7 on PA21, mask is 1<<20 | 1 << 21;  
   //.platformio\packages\framework-arduino-samd\variants\mkrwifi1010\variant.cpp
   const uint32_t MUX_IOPIN_MASK = 0x00300000; 
 };
