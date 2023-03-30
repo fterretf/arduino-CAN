@@ -154,7 +154,7 @@ int MCP2515Class::begin(long baudRate)
   writeRegister(REG_CNF3, cnf[2]);
 
   writeRegister(REG_CANINTE, FLAG_RXnIE(1) | FLAG_RXnIE(0));
-  writeRegister(REG_BFPCTRL, 0x00);
+  writeRegister(REG_BFPCTRL, 0x0C); //PIN CONTROL AND STATUS REGISTER RX0BF,RX1BF as o/p to led
   writeRegister(REG_TXRTSCTRL, 0x00);
   writeRegister(REG_RXBnCTRL(0), RXBXCTRL_FILTER01_ON_NO_ROLLOVER);
   writeRegister(REG_RXBnCTRL(1), RXBXCTRL_FILTER01_ON_NO_ROLLOVER);
@@ -163,8 +163,39 @@ int MCP2515Class::begin(long baudRate)
   if (readRegister(REG_CANCTRL) != 0x00) {
     return 0;
   }
+  ledGreenOff();
+  ledRedOff();
 
   return 1;
+}
+
+void MCP2515Class::ledRedToggle() { //rxobfOn; avaible on CAN1,2
+ if (readRegister(REG_BFPCTRL) & 0x10) {
+   ledRedOn();
+ }
+ else{
+   ledRedOff();
+ }
+}
+void MCP2515Class::ledGreenToggle() { //rxobfOn; avaible on CAN1,2
+ if (readRegister(REG_BFPCTRL) & 0x20) {
+   ledGreenOn();
+ }
+ else{
+   ledGreenOff();
+ }
+}
+void MCP2515Class::ledRedOn() { //rxobfOn; avaible on CAN1,2
+  modifyRegister(REG_BFPCTRL, 0x10, 0x00);
+}
+void MCP2515Class::ledRedOff() { //rxobfOff() avaible on CAN1,2 
+  modifyRegister(REG_BFPCTRL, 0x10, 0x10);
+}
+void MCP2515Class::ledGreenOn(){ //rx1bfOn avaible on CAN1
+  modifyRegister(REG_BFPCTRL, 0x20, 0x00);
+}
+void MCP2515Class::ledGreenOff(){ //rx1bfOff; avaible on CAN1,2
+  modifyRegister(REG_BFPCTRL, 0x20, 0x20);
 }
 
 void MCP2515Class::end()

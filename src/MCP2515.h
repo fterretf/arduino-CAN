@@ -77,6 +77,13 @@ public:
   void dumpRegisters(Stream& out);
   void dumpRegisters();
 
+  void ledRedOn();
+  void ledRedOff();
+  void ledRedToggle();
+  void ledGreenOn();
+  void ledGreenOff();
+  void ledGreenToggle();
+
 private:
   void reset();
 
