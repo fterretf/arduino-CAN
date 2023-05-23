@@ -8,8 +8,10 @@
 
 #include <SPI.h>
 #include <functional>
+// #include "canCmn.h"
 
 #include "CANController.h"
+#include "canCmn.h"
 
 
 #define MCP2515_DEFAULT_CLOCK_FREQUENCY 16e6
@@ -26,16 +28,10 @@
 class MCP2515Class : public CANControllerClass {
 
  public:
-  enum eCanBusId : int8_t {
-    eCan0 = 0,  //CAN on CAN bus shield daughter board    
-    eCan1,      //CAN1-C4
-    eCan2,      //CAN2-vehicle1
-    eCan3,      //CAN3-vehicle2
-    eCanNb,
-  };  
+ 
 
 public:
-  MCP2515Class(eCanBusId busId);
+  MCP2515Class(CanCmn::eCanBusId busId); 
   virtual ~MCP2515Class();
 
   virtual int begin(long baudRate);
@@ -106,7 +102,7 @@ private:
   int _csPin;
   int _intPin;
   long _clockFrequency;
-  eCanBusId _busId;
+  CanCmn::eCanBusId _busId;
   // See PinDescription in variant.cpp  : D6 is on PA20, D7 on PA21, mask is 1<<20 | 1 << 21;  
   //.platformio\packages\framework-arduino-samd\variants\mkrwifi1010\variant.cpp
   const uint32_t MUX_IOPIN_MASK = 0x00300000; 

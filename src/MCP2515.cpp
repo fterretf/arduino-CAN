@@ -68,7 +68,7 @@
 #define RXBXCTRL_FILTER01_ON_NO_ROLLOVER   0x00 //Enable filters on MBX0 and 1 and disable rollover. See datasheet RXB0CTRL, RXB1CTRL
 
 
-MCP2515Class::MCP2515Class(eCanBusId busId) :
+MCP2515Class::MCP2515Class(CanCmn::eCanBusId busId) :
   CANControllerClass(),
   _spiSettings(4E6, MSBFIRST, SPI_MODE0),
   _csPin(MCP2515_DEFAULT_CS_PIN),
@@ -133,7 +133,11 @@ int MCP2515Class::begin(long baudRate)
     //use tools https://intrepidcs.com/products/free-tools/mb-time-calculator/
     //{ (long)12E6,  (long)1000E3, { ??? } }, not possible!
     { (long)12E6,  (long)500E3, { 0x00, 0xA8, 0x03 } },
-    { (long)12E6,  (long)250E3, { 0x00, 0xbe, 0x07 } },
+    { (long)12E6,  (long)250E3, { 0x01, 0xbe, 0x07 } },
+
+    { (long)24E6,  (long)1000E3,{ 0x00, 0xA8, 0x03 } }, //minimum bus idle time 24 OSC instead of required 26!!!!
+    { (long)24E6,  (long)500E3, { 0x01, 0xA8, 0x03 } },
+    { (long)24E6,  (long)250E3, { 0x01, 0xBE, 0x07 } },
   };
 
   const uint8_t* cnf = NULL;
@@ -618,16 +622,16 @@ void MCP2515Class::handleInterrupt()
 void MCP2515Class::csSelect()
 {
   switch (_busId) {
-    case MCP2515Class::eCanBusId::eCan0:
+    case CanCmn::eCanBusId::eCan0:
       digitalWrite(_csPin, LOW);
       break;
-    case MCP2515Class::eCanBusId::eCan1:
+    case CanCmn::eCanBusId::eCan1:
       _Mux.can1Cs();
       break;
-    case MCP2515Class::eCanBusId::eCan2:
+    case CanCmn::eCanBusId::eCan2:
       _Mux.can2Cs();
       break;
-    case MCP2515Class::eCanBusId::eCan3:
+    case CanCmn::eCanBusId::eCan3:
       _Mux.can3Cs();
       break;      
     default:
@@ -637,16 +641,16 @@ void MCP2515Class::csSelect()
 void MCP2515Class::csUnselect()
 {
   switch (_busId) {
-    case MCP2515Class::eCanBusId::eCan0:
+    case CanCmn::eCanBusId::eCan0:
     	digitalWrite(_csPin, HIGH);
       break;
-    case MCP2515Class::eCanBusId::eCan1:
+    case CanCmn::eCanBusId::eCan1:
       _Mux.can1UnCs();
       break;
-    case MCP2515Class::eCanBusId::eCan2:
+    case CanCmn::eCanBusId::eCan2:
       _Mux.can2UnCs();
       break;
-    case MCP2515Class::eCanBusId::eCan3:
+    case CanCmn::eCanBusId::eCan3:
       _Mux.can3UnCs();
       break;      
     default:
