@@ -70,7 +70,7 @@
 
 MCP2515Class::MCP2515Class(CanCmn::eCanBusId busId) :
   CANControllerClass(),
-  _spiSettings(4E6, MSBFIRST, SPI_MODE0),
+  _spiSettings(8E6, MSBFIRST, SPI_MODE0),
   _csPin(MCP2515_DEFAULT_CS_PIN),
   _intPin(MCP2515_DEFAULT_INT_PIN),
   _clockFrequency(MCP2515_DEFAULT_CLOCK_FREQUENCY),
