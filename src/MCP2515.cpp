@@ -628,9 +628,6 @@ void MCP2515Class::csSelect()
     case CanCmn::eCanBusId::eCan1:
       _Mux.can1Cs();
       break;
-    case CanCmn::eCanBusId::eCan2:
-      _Mux.can2Cs();
-      break;
     default:
       break;
   }
@@ -643,9 +640,6 @@ void MCP2515Class::csUnselect()
       break;
     case CanCmn::eCanBusId::eCan1:
       _Mux.can1UnCs();
-      break;
-    case CanCmn::eCanBusId::eCan2:
-      _Mux.can2UnCs();
       break;
     default:
       break;
